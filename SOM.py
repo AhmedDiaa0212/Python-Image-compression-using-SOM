@@ -27,13 +27,13 @@ class MiniSom:
                 bmu = self.find_bmu(x)
                 self.update_weights(x, bmu, t, max_iter)
 
-    def compress_image(self, image_path, new_width, new_height, max_iter=100):
-        image = Image.open(image_path).resize((new_width, new_height))
+    def compress_image(self, image_path, max_iter=100):
+        image = Image.open(image_path)
         image_array = np.array(image) / 255.0
         flattened_image = image_array.reshape(-1, 3)
         self.train(flattened_image, max_iter)
         bmu_indices = np.array([self.find_bmu(x) for x in flattened_image])
-        compressed_image = self.weights[bmu_indices[:, 0], bmu_indices[:, 1]].reshape(new_width, new_height, 3)
+        compressed_image = self.weights[bmu_indices[:, 0], bmu_indices[:, 1]]
         return compressed_image, image
 
 # Function to display images and information
@@ -60,13 +60,13 @@ som = MiniSom(10, 10, 3)
 images_and_sizes = []
 
 # Original Image
-original_image = Image.open("input_image.jpg")
+original_image = Image.open("n.png")
 original_image_size = original_image.size[0] * original_image.size[1] * len(original_image.getbands()) / 1024.0
 original_image = np.array(original_image)
 images_and_sizes.append((original_image, original_image_size))
 
 # Compressed Image
-compressed_image, _ = som.compress_image("input_image.jpg", 100, 100)
+compressed_image, _ = som.compress_image("n.png")
 compressed_image_size = compressed_image.nbytes / 1024.0
 images_and_sizes.append((compressed_image, compressed_image_size))
 
