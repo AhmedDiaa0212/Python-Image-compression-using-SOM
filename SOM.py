@@ -16,8 +16,9 @@ def progressbar(it, prefix="", size=60, out=sys.stdout):
         remaining = ((time.time() - start) / j) * (count - j)
         mins, sec = divmod(remaining, 60)
         time_str = f"{int(mins):02}:{sec:03.1f}"
-        print(f"{prefix}[{u'█' * x}{('.' * (size - x))}] {j}/{count} Est wait {time_str}", end='\r', file=out,
+        print(f"{prefix}[{'█' * x}{'.' * (size - x)}] {j}/{count} Est wait {time_str}", end='\r', file=out,
               flush=True)
+
     show(0.1)
     for i, item in enumerate(it):
         yield item
@@ -34,13 +35,13 @@ class SOM:
         self.learning_rate = learning_rate
         self.sigma = sigma
 
-    def train(self, data, num_iterations, learning_rate, sigma):
-        for iteration in progressbar(range(num_iterations), "Training: "):
+    def train(self, data):
+        for iteration in progressbar(range(self.num_iterations), "Training: "):
             data_point = data[np.random.randint(len(data))]
             # Find the best matching unit (BMU)
             bmu_index = self.find_bmu(data_point)
             # Update weights of BMU and its neighbors
-            self.update_weights(bmu_index, data_point, iteration, num_iterations, learning_rate, sigma)
+            self.update_weights(bmu_index, data_point, iteration)
 
     def find_bmu(self, data_point):
         # Calculate Euclidean distances between data point and SOM weights
@@ -49,7 +50,7 @@ class SOM:
         bmu_index = np.unravel_index(np.argmin(distances, axis=None), distances.shape)
         return bmu_index
 
-    def update_weights(self, bmu_index, data_point, iteration, num_iterations, learning_rate, sigma):
+    def update_weights(self, bmu_index, data_point, iteration):
         # Calculate neighborhood radius
         radius = sigma * np.exp(-iteration / num_iterations)
         # Update weights of BMU and its neighbors
@@ -67,10 +68,10 @@ class SOM:
         image = Image.open(input_image_path)
         # Convert image to numpy array
         image_array = np.array(image)
-        image_array = image_array / 255.0   # Normalize pixel values
+        image_array = image_array / 255.0  # Normalize pixel values
         height, width, channels = image_array.shape
-        image_array = image_array.reshape(-1, channels)     # Reshape image array
-        self.train(image_array, self.num_iterations, self.learning_rate, self.sigma)
+        image_array = image_array.reshape(-1, channels)  # Reshape image array
+        self.train(image_array)
         compressed_image = np.zeros(image_array.shape)
         for i in progressbar(range(image_array.shape[0]), "Compressing: "):
             bmu_index = self.find_bmu(image_array[i])
@@ -86,7 +87,7 @@ class SOM:
         print("Image compressed and saved successfully!")
 
 
-def compare_images(original_image, original_size,compressed_image,compressed_size):
+def compare_images(original_image, original_size, compressed_image, compressed_size):
     # Set up the figure
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
     # Display original image
