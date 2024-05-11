@@ -139,12 +139,12 @@ sigma = 10
 original_image = Image.open(input_image_path)
 original_size = os.path.getsize(input_image_path) // 1024  # Size in KB
 
+som = SOM(input_size, output_size)
+som.compress_image(input_image_path, output_image_path)
+
 # Load compressed image
 compressed_image = Image.open(output_image_path)
 compressed_size = os.path.getsize(output_image_path) // 1024  # Size in KB
 
-som = SOM(input_size, output_size)
-som.compress_image(input_image_path, output_image_path)
 compare_images(original_image, original_size,compressed_image,compressed_size)
 performance_measurement(original_size, compressed_size)
-
