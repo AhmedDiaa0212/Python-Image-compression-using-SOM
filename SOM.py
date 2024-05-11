@@ -86,32 +86,43 @@ class SOM:
         print("Image compressed and saved successfully!")
 
 
-def compare_images(original_image_path, compressed_image_path):
-    # Load original image
-    original_image = Image.open(original_image_path)
-    original_size = os.path.getsize(original_image_path) // 1024  # Size in KB
-
-    # Load compressed image
-    compressed_image = Image.open(compressed_image_path)
-    compressed_size = os.path.getsize(compressed_image_path) // 1024  # Size in KB
-
+def compare_images(original_image, original_size,compressed_image,compressed_size):
     # Set up the figure
     fig, axes = plt.subplots(1, 2, figsize=(12, 6))
-
+    
     # Display original image
     axes[0].imshow(original_image)
     axes[0].set_title(f'Original Image - Size: {original_size} KB')
-    axes[0].axis('off')
 
     # Display compressed image
     axes[1].imshow(compressed_image)
     axes[1].set_title(f'Compressed Image - Size: {compressed_size} KB')
-    axes[1].axis('off')
 
     # Adjust spacing between subplots
     plt.subplots_adjust(wspace=0.4)
 
     # Show plot
+    plt.show()
+
+def performance_measurement(original_size, compressed_size):
+    # Calculate compression ratio
+    compression_ratio = original_size / compressed_size
+
+    # Create a table
+    fig, ax = plt.subplots(figsize=(5, 2))
+    ax.axis('off')  # Turn off axis
+
+    # Define table data
+    table_data = [
+        ['Compression Ratio', f'{compression_ratio:.2f}']
+    ]
+
+    # Create table
+    table = ax.table(cellText=table_data, loc='center', cellLoc='center', colWidths=[0.3, 0.3])
+    table.auto_set_font_size(False)
+    table.set_fontsize(12)
+    table.scale(1.5, 1.5)  # Scale the table for better visibility
+
     plt.show()
 
 
@@ -124,6 +135,16 @@ num_iterations = 10000
 learning_rate = 0.1
 sigma = 10
 
+# Load original image
+original_image = Image.open(input_image_path)
+original_size = os.path.getsize(input_image_path) // 1024  # Size in KB
+
+# Load compressed image
+compressed_image = Image.open(output_image_path)
+compressed_size = os.path.getsize(output_image_path) // 1024  # Size in KB
+
 som = SOM(input_size, output_size)
 som.compress_image(input_image_path, output_image_path)
-compare_images(input_image_path, output_image_path)
+compare_images(original_image, original_size,compressed_image,compressed_size)
+performance_measurement(original_size, compressed_size)
+
