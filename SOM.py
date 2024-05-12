@@ -52,7 +52,7 @@ class SOM:
 
     def update_weights(self, bmu_index, data_point, iteration):
         # Calculate neighborhood radius
-        radius = sigma * np.exp(-iteration / num_iterations)
+        radius = self.sigma * np.exp(-iteration / self.num_iterations)
         # Update weights of BMU and its neighbors
         for i in range(self.output_size[0]):
             for j in range(self.output_size[1]):
@@ -61,7 +61,7 @@ class SOM:
                 # Calculate the influence of the neuron on BMU
                 influence = np.exp(-distance ** 2 / (2 * radius ** 2))
                 # Update weights
-                self.weights[i, j] += influence * learning_rate * (data_point - self.weights[i, j])
+                self.weights[i, j] += influence * self.learning_rate * (data_point - self.weights[i, j])
 
     def compress_image(self, input_image_path, output_image_path):
         # Load the image
@@ -100,13 +100,24 @@ def compare_images(original_image, original_size, compressed_image, compressed_s
     plt.show()
 
 
-def performance_measurement(original_size, compressed_size):
+def performance_measurement(original_size, compressed_size, data):
     # Calculate compression ratio
     compression_ratio = original_size / compressed_size
+
+    # Calculate Quantization Error (QE)
+    qe_sum = 0.0
+    for data_point in data:
+        bmu_index = som.find_bmu(data_point)
+        bmu = som.weights[bmu_index]
+        qe_sum += np.linalg.norm(data_point - bmu)
+    quantization_error = qe_sum / len(data)
+
+    # Create a table
     fig, ax = plt.subplots(figsize=(5, 2))
     ax.axis('off')
     table_data = [
-        ['Compression Ratio', f'{compression_ratio:.2f}']
+        ['Compression Ratio', f'{compression_ratio:.2f}'],
+        ['Quantization Error', f'{quantization_error:.4f}']
     ]
     table = ax.table(cellText=table_data, loc='center', cellLoc='center', colWidths=[0.3, 0.3])
     table.auto_set_font_size(False)
@@ -118,7 +129,7 @@ def performance_measurement(original_size, compressed_size):
 input_image_path = "input_image.jpg"
 output_image_path = "compressed_image.jpg"
 input_size = 3  # Number of channels
-output_size = (50, 50)  # SOM grid size
+output_size = (10, 10)  # SOM grid size
 num_iterations = 10000
 learning_rate = 0.1
 sigma = 10
@@ -135,4 +146,6 @@ compressed_image = Image.open(output_image_path)
 compressed_size = os.path.getsize(output_image_path) // 1024  # Size in KB
 
 compare_images(original_image, original_size, compressed_image, compressed_size)
-performance_measurement(original_size, compressed_size)
+data = np.array(original_image) / 255.0  # Normalize pixel values
+data = data.reshape(-1, input_size)  # Reshape data
+performance_measurement(original_size, compressed_size, data)
